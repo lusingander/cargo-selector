@@ -1,4 +1,5 @@
-use cargo_selector::run;
+mod cargo;
+
 use clap::{Args, Parser};
 
 // https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
@@ -14,7 +15,24 @@ enum Cli {
 #[command(version, about, long_about = None)]
 struct SelectorArgs {}
 
+#[derive(Debug)]
+pub struct Target {
+    name: String,
+    kind: TargetKind,
+    path: String,
+    required_features: Vec<String>,
+}
+
+#[derive(Debug)]
+pub enum TargetKind {
+    Bin,
+    Example,
+}
+
 fn main() -> std::io::Result<()> {
     let _ = Cli::parse();
-    run()
+
+    let targets = cargo::get_all_targets();
+    println!("{:?}", targets);
+    Ok(())
 }
