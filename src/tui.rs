@@ -1,3 +1,4 @@
+use console::truncate_str;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     backend::Backend,
@@ -93,6 +94,7 @@ impl Tui {
     }
 
     fn render_list(&self, f: &mut Frame, area: Rect) {
+        let max_w = area.width as usize;
         let items: Vec<ListItem> = self
             .filtered
             .iter()
@@ -101,32 +103,41 @@ impl Tui {
                 let selected = i == self.cursor;
                 self.targets
                     .get(*fi)
-                    .map(|t| self.build_list_item(t, selected))
+                    .map(|t| self.build_list_item(t, selected, max_w))
             })
             .collect();
         let list = List::new(items);
         f.render_widget(list, area);
     }
 
-    fn build_list_item(&self, target: &Target, selected: bool) -> ListItem {
+    fn build_list_item(&self, target: &Target, selected: bool, max_w: usize) -> ListItem {
+        let kind_w: usize = 7;
+        let name_w: usize = 25;
+        let path_w: usize = 30;
+        let features_w: usize = max_w - (kind_w + name_w + path_w + 5);
+
         let kind = match target.kind {
             TargetKind::Bin => "bin",
             TargetKind::Example => "example",
         };
-        let required_features = if target.required_features.is_empty() {
+        let name = truncate_str(&target.name, name_w, "..");
+        let path = truncate_str(&target.path, path_w, "..");
+        let features = if target.required_features.is_empty() {
             "".to_string()
         } else {
-            format!("--features {:?}", target.required_features)
+            let s = format!("--features {:?}", target.required_features);
+            truncate_str(&s, features_w, "..").into()
         };
+
         let spans = vec![
             " ".into(),
-            format!("{:7}", kind).fg(Color::Blue),
+            format!("{:kind_w$}", kind).fg(Color::Blue),
             " ".into(),
-            format!("{:25}", target.name).fg(Color::White),
+            format!("{:name_w$}", name).fg(Color::White),
             " ".into(),
-            format!("{:30}", target.path).fg(Color::DarkGray),
+            format!("{:path_w$}", path).fg(Color::DarkGray),
             " ".into(),
-            required_features.fg(Color::DarkGray),
+            format!("{:features_w$}", features).fg(Color::DarkGray),
             " ".into(),
         ];
         let line = Text::from(Line::from(spans));
