@@ -4,19 +4,22 @@ use ratatui::{
     backend::Backend,
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::{Line, Span, Text},
+    text::{Line, Text},
     widgets::{List, ListItem, Paragraph},
     Frame, Terminal,
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, Target, TargetKind};
+use crate::{key_code, key_code_char, util::digits, Target, TargetKind};
 
 pub struct Tui {
     targets: Vec<Target>,
     filtered: Vec<usize>,
     cursor: usize,
     input: Input,
+
+    list_height: usize,
+    list_offset: usize,
 }
 
 pub enum Ret {
@@ -26,13 +29,15 @@ pub enum Ret {
 }
 
 impl Tui {
-    pub fn new(targets: Vec<Target>) -> Tui {
+    pub fn new(targets: Vec<Target>, term_size: Rect) -> Tui {
         let filtered = (0..targets.len()).collect();
         Tui {
             targets,
             filtered,
             cursor: 0,
             input: Input::default(),
+            list_height: Tui::calc_list_height(term_size.height),
+            list_offset: 0,
         }
     }
 
@@ -40,20 +45,16 @@ impl Tui {
         loop {
             terminal.draw(|f| self.render(f))?;
 
-            if let Event::Key(key) = event::read()? {
-                match key {
+            match event::read()? {
+                Event::Key(key) => match key {
                     key_code!(KeyCode::Esc) | key_code_char!('c', Ctrl) => {
                         return Ok(Ret::Quit);
                     }
                     key_code_char!('n', Ctrl) => {
-                        if self.cursor < self.filtered.len() - 1 {
-                            self.cursor += 1;
-                        }
+                        self.select_next();
                     }
                     key_code_char!('p', Ctrl) => {
-                        if self.cursor > 0 {
-                            self.cursor -= 1;
-                        }
+                        self.select_prev();
                     }
                     key_code!(KeyCode::Enter) => {
                         let ret = match self.get_current_target() {
@@ -66,8 +67,34 @@ impl Tui {
                         self.input.handle_event(&Event::Key(key));
                         self.update_filter();
                     }
+                },
+                Event::Resize(_, h) => {
+                    self.list_height = Tui::calc_list_height(h);
                 }
+                _ => {}
             }
+        }
+    }
+
+    fn calc_list_height(h: u16) -> usize {
+        (h - 1) as usize
+    }
+
+    fn select_next(&mut self) {
+        if self.cursor < self.filtered.len() - 1 {
+            if self.cursor - self.list_offset == self.list_height - 1 {
+                self.list_offset += 1;
+            }
+            self.cursor += 1;
+        }
+    }
+
+    fn select_prev(&mut self) {
+        if self.cursor > 0 {
+            if self.cursor - self.list_offset == 0 {
+                self.list_offset -= 1;
+            }
+            self.cursor -= 1;
         }
     }
 
@@ -88,6 +115,7 @@ impl Tui {
             .map(|(i, _)| i)
             .collect();
         self.cursor = 0;
+        self.list_offset = 0;
     }
 
     fn render(&self, f: &mut Frame) {
@@ -97,10 +125,30 @@ impl Tui {
     }
 
     fn render_input(&self, f: &mut Frame, area: Rect) {
+        let targets_num_digits = digits(self.targets.len());
+        let max_w = area.width as usize;
+        let label_w = 5;
+        let num_w = targets_num_digits * 2 + 5;
+        let input_w = max_w - (label_w + num_w + 3);
+
+        let label = " run ";
+        let input = format!("{:input_w$}", self.input.value());
+        let nums = if self.filtered.is_empty() {
+            "".to_string()
+        } else {
+            format!(
+                "({:targets_num_digits$} / {:targets_num_digits$})",
+                self.cursor + 1,
+                self.filtered.len()
+            )
+        };
         let spans = vec![
-            Span::styled(" run ", Style::default().bg(Color::Green).fg(Color::Black)),
+            label.bg(Color::Green).fg(Color::Black),
             " ".into(),
-            self.input.value().into(),
+            input.into(),
+            " ".into(),
+            nums.fg(Color::DarkGray),
+            " ".into(),
         ];
         let line = Paragraph::new(Line::from(spans));
         f.render_widget(line, area);
@@ -116,6 +164,8 @@ impl Tui {
             .filtered
             .iter()
             .enumerate()
+            .skip(self.list_offset)
+            .take(self.list_height)
             .flat_map(|(i, fi)| {
                 let selected = i == self.cursor;
                 self.targets

@@ -1,6 +1,7 @@
 mod cargo;
 mod macros;
 mod tui;
+mod util;
 
 use std::{
     io::{stderr, Stderr},
@@ -70,7 +71,8 @@ fn main() -> std::io::Result<()> {
 
     initialize_panic_handler();
     let mut terminal = setup()?;
-    let ret = Tui::new(targets).run(&mut terminal);
+    let term_size = terminal.get_frame().size();
+    let ret = Tui::new(targets, term_size).run(&mut terminal);
     shutdown()?;
 
     ret.map(|t| match t {
