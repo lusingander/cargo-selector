@@ -1,6 +1,7 @@
 use std::{
     env,
     path::{Path, PathBuf},
+    process::Command,
 };
 
 use cargo_metadata::{Metadata as CargoMetadata, MetadataCommand, Target as CargoTarget};
@@ -56,4 +57,32 @@ pub fn get_all_targets() -> Vec<Target> {
         .expect("failed to exec metadata command");
     let current_dir = get_current_dir();
     convert(metadata, &current_dir)
+}
+
+pub fn exec_cargo_run(target: &Target) {
+    let kind = match target.kind {
+        TargetKind::Bin => "--bin",
+        TargetKind::Example => "--example",
+    };
+    let name = &target.name;
+
+    let mut cmd = Command::new("cargo");
+    cmd.arg("run").arg(kind).arg(name);
+
+    let mut cmd_str = format!("cargo run {} {}", kind, name);
+
+    if !target.required_features.is_empty() {
+        let features = target.required_features.join(" ");
+        cmd.arg("--features").arg(&features);
+
+        cmd_str.push_str(&format!(" --features \"{}\"", &features));
+    };
+
+    eprintln!("{}", cmd_str);
+
+    // todo: return exit code
+    cmd.spawn()
+        .expect("failed to spawn cargo run command")
+        .wait()
+        .unwrap();
 }

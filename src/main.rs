@@ -13,7 +13,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
-use tui::Tui;
+use tui::{Ret, Tui};
 
 // https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
 // https://docs.rs/clap/latest/clap/_derive/_cookbook/cargo_example_derive/index.html
@@ -28,7 +28,7 @@ enum Cli {
 #[command(version, about, long_about = None)]
 struct SelectorArgs {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Target {
     name: String,
     kind: TargetKind,
@@ -36,7 +36,7 @@ pub struct Target {
     required_features: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum TargetKind {
     Bin,
     Example,
@@ -73,5 +73,9 @@ fn main() -> std::io::Result<()> {
     let ret = Tui::new(targets).run(&mut terminal);
     shutdown()?;
 
-    ret
+    ret.map(|t| match t {
+        Ret::Quit => {}
+        Ret::Selected(t) => cargo::exec_cargo_run(&t),
+        Ret::NotSelected => eprintln!("no command selected"),
+    })
 }

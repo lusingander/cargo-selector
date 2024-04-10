@@ -19,6 +19,12 @@ pub struct Tui {
     input: Input,
 }
 
+pub enum Ret {
+    Quit,
+    Selected(Target),
+    NotSelected,
+}
+
 impl Tui {
     pub fn new(targets: Vec<Target>) -> Tui {
         let filtered = (0..targets.len()).collect();
@@ -30,14 +36,14 @@ impl Tui {
         }
     }
 
-    pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> std::io::Result<()> {
+    pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> std::io::Result<Ret> {
         loop {
             terminal.draw(|f| self.render(f))?;
 
             if let Event::Key(key) = event::read()? {
                 match key {
                     key_code!(KeyCode::Esc) | key_code_char!('c', Ctrl) => {
-                        return Ok(());
+                        return Ok(Ret::Quit);
                     }
                     key_code_char!('n', Ctrl) => {
                         if self.cursor < self.filtered.len() - 1 {
@@ -50,7 +56,11 @@ impl Tui {
                         }
                     }
                     key_code!(KeyCode::Enter) => {
-                        // todo
+                        let ret = match self.get_current_target() {
+                            Some(target) => Ret::Selected(target),
+                            None => Ret::NotSelected,
+                        };
+                        return Ok(ret);
                     }
                     _ => {
                         self.input.handle_event(&Event::Key(key));
@@ -59,6 +69,13 @@ impl Tui {
                 }
             }
         }
+    }
+
+    fn get_current_target(&self) -> Option<Target> {
+        self.filtered
+            .get(self.cursor)
+            .and_then(|i| self.targets.get(*i))
+            .cloned()
     }
 
     fn update_filter(&mut self) {
