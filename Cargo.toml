@@ -2,6 +2,14 @@
 name = "cargo-selector"
 version = "0.1.0"
 edition = "2021"
+description = "Cargo subcommand to select and execute binary/example targets"
+authors = ["Kyosuke Fujimoto <kyoro.f@gmail.com>"]
+homepage = "https://github.com/lusingander/cargo-selector"
+repository = "https://github.com/lusingander/cargo-selector"
+readme = "README.md"
+license = "MIT"
+keywords = ["cargo", "subcommand", "plugin", "tui"]
+categories = ["development-tools::cargo-plugins", "command-line-utilities"]
 
 [dependencies]
 cargo_metadata = "0.18.1"
