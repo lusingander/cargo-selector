@@ -50,10 +50,10 @@ impl Tui {
                     key_code!(KeyCode::Esc) | key_code_char!('c', Ctrl) => {
                         return Ok(Ret::Quit);
                     }
-                    key_code_char!('n', Ctrl) => {
+                    key_code!(KeyCode::Down) | key_code_char!('n', Ctrl) => {
                         self.select_next();
                     }
-                    key_code_char!('p', Ctrl) => {
+                    key_code!(KeyCode::Up) | key_code_char!('p', Ctrl) => {
                         self.select_prev();
                     }
                     key_code!(KeyCode::Enter) => {
