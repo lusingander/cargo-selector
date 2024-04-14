@@ -16,9 +16,6 @@ use crossterm::{
 use ratatui::{backend::CrosstermBackend, Terminal, TerminalOptions, Viewport};
 use tui::{Ret, Tui};
 
-// https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
-// https://docs.rs/clap/latest/clap/_derive/_cookbook/cargo_example_derive/index.html
-
 #[derive(Debug, Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
 enum Cli {
