@@ -31,6 +31,10 @@ struct SelectorArgs {
     /// Display list inline
     #[arg(short, long)]
     inline: bool,
+
+    /// List size
+    #[arg(short = 'n', long, default_value = "10", value_name = "SIZE")]
+    inline_list_size: u16,
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +51,10 @@ pub enum TargetKind {
     Example,
 }
 
-fn setup(inline: bool) -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
+fn setup(
+    inline: bool,
+    inline_list_size: u16,
+) -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
     enable_raw_mode()?;
     if !inline {
         execute!(stderr(), EnterAlternateScreen)?;
@@ -55,7 +62,7 @@ fn setup(inline: bool) -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
 
     let backend = CrosstermBackend::new(stderr());
     let viewport = if inline {
-        Viewport::Inline(11)
+        Viewport::Inline(inline_list_size + 1)
     } else {
         Viewport::Fullscreen
     };
@@ -80,12 +87,15 @@ fn initialize_panic_handler(inline: bool) {
 
 fn main() -> std::io::Result<()> {
     let Cli::Selector(args) = Cli::parse();
-    let SelectorArgs { inline } = args;
+    let SelectorArgs {
+        inline,
+        inline_list_size,
+    } = args;
 
     let targets = cargo::get_all_targets();
 
     initialize_panic_handler(inline);
-    let mut terminal = setup(inline)?;
+    let mut terminal = setup(inline, inline_list_size)?;
     let term_size = terminal.get_frame().size();
     let ret = Tui::new(targets, term_size).run(&mut terminal);
     shutdown(inline)?;
