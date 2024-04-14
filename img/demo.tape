@@ -11,8 +11,6 @@ Set BorderRadius 20
 
 Set Theme "iceberg-dark"
 
-Show
-
 Sleep 500ms
 
 Type@100ms "cargo selector"
