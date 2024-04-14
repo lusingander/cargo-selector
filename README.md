@@ -4,7 +4,7 @@
 
 Cargo subcommand to select and execute binary/example targets
 
-<img src="./img/demo.gif" width=600>
+<img src="./img/demo.gif" width=800>
 
 (This demo uses [Ratatui](https://github.com/ratatui-org/ratatui) as an example!)
 
@@ -15,6 +15,18 @@ $ cargo install cargo-selector
 ```
 
 ## Usage
+
+```
+Usage: cargo selector [OPTIONS]
+
+Options:
+  -i, --inline                   Display list inline
+  -n, --inline-list-size <SIZE>  List size [default: 10]
+  -h, --help                     Print help
+  -V, --version                  Print version
+```
+
+Run the command in the cargo project directory:
 
 ```
 $ cargo selector
