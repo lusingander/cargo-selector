@@ -13,7 +13,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{backend::CrosstermBackend, Terminal};
+use ratatui::{backend::CrosstermBackend, Terminal, TerminalOptions, Viewport};
 use tui::{Ret, Tui};
 
 // https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
@@ -27,7 +27,11 @@ enum Cli {
 
 #[derive(Debug, Args)]
 #[command(version, about, long_about = None)]
-struct SelectorArgs {}
+struct SelectorArgs {
+    /// Display list inline
+    #[arg(short, long)]
+    inline: bool,
+}
 
 #[derive(Debug, Clone)]
 pub struct Target {
@@ -43,37 +47,52 @@ pub enum TargetKind {
     Example,
 }
 
-fn setup() -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
+fn setup(inline: bool) -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
     enable_raw_mode()?;
-    execute!(stderr(), EnterAlternateScreen)?;
+    if !inline {
+        execute!(stderr(), EnterAlternateScreen)?;
+    }
+
     let backend = CrosstermBackend::new(stderr());
-    Terminal::new(backend)
+    let viewport = if inline {
+        Viewport::Inline(11)
+    } else {
+        Viewport::Fullscreen
+    };
+    Terminal::with_options(backend, TerminalOptions { viewport })
 }
 
-fn shutdown() -> std::io::Result<()> {
-    execute!(stderr(), LeaveAlternateScreen)?;
+fn shutdown(inline: bool) -> std::io::Result<()> {
+    if !inline {
+        execute!(stderr(), LeaveAlternateScreen)?;
+    }
     disable_raw_mode()?;
     Ok(())
 }
 
-fn initialize_panic_handler() {
+fn initialize_panic_handler(inline: bool) {
     let original_hook = panic::take_hook();
     panic::set_hook(Box::new(move |panic_info| {
-        shutdown().unwrap();
+        shutdown(inline).unwrap();
         original_hook(panic_info);
     }));
 }
 
 fn main() -> std::io::Result<()> {
-    let _ = Cli::parse();
+    let Cli::Selector(args) = Cli::parse();
+    let SelectorArgs { inline } = args;
 
     let targets = cargo::get_all_targets();
 
-    initialize_panic_handler();
-    let mut terminal = setup()?;
+    initialize_panic_handler(inline);
+    let mut terminal = setup(inline)?;
     let term_size = terminal.get_frame().size();
     let ret = Tui::new(targets, term_size).run(&mut terminal);
-    shutdown()?;
+    shutdown(inline)?;
+
+    if inline {
+        terminal.clear()?;
+    }
 
     ret.map(|t| match t {
         Ret::Quit => {}
