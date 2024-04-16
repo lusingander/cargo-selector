@@ -4,7 +4,7 @@ mod tui;
 mod util;
 
 use std::{
-    io::{stderr, Stderr},
+    io::{stderr, BufWriter, Stderr},
     panic,
 };
 
@@ -51,13 +51,13 @@ pub enum TargetKind {
 fn setup(
     inline: bool,
     inline_list_size: u16,
-) -> std::io::Result<Terminal<CrosstermBackend<Stderr>>> {
+) -> std::io::Result<Terminal<CrosstermBackend<BufWriter<Stderr>>>> {
     enable_raw_mode()?;
     if !inline {
         execute!(stderr(), EnterAlternateScreen)?;
     }
 
-    let backend = CrosstermBackend::new(stderr());
+    let backend = CrosstermBackend::new(BufWriter::new(stderr()));
     let viewport = if inline {
         Viewport::Inline(inline_list_size + 1)
     } else {
