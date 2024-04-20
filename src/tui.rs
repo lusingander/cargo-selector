@@ -1,5 +1,5 @@
 use console::truncate_str;
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
     backend::Backend,
     layout::{Constraint, Layout, Rect},
