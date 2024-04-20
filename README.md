@@ -22,6 +22,7 @@ Usage: cargo selector [OPTIONS]
 Options:
   -i, --inline                   Display list inline
   -n, --inline-list-size <SIZE>  List size [default: 10]
+  -k, --kind <NAME>              Target kind [possible values: bin, example]
   -h, --help                     Print help
   -V, --version                  Print version
 ```
