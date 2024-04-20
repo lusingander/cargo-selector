@@ -8,7 +8,7 @@ use std::{
     panic,
 };
 
-use clap::{Args, Parser};
+use clap::{Args, Parser, ValueEnum};
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -32,6 +32,10 @@ struct SelectorArgs {
     /// List size
     #[arg(short = 'n', long, default_value = "10", value_name = "SIZE")]
     inline_list_size: u16,
+
+    /// Target kind
+    #[arg(short, long, value_name = "NAME")]
+    kind: Option<TargetKind>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,7 +46,7 @@ pub struct Target {
     required_features: Vec<String>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum TargetKind {
     Bin,
     Example,
@@ -87,9 +91,13 @@ fn main() -> std::io::Result<()> {
     let SelectorArgs {
         inline,
         inline_list_size,
+        kind,
     } = args;
 
-    let targets = cargo::get_all_targets();
+    let mut targets = cargo::get_all_targets();
+    if let Some(kind) = kind {
+        targets.retain(|t| t.kind == kind);
+    }
 
     initialize_panic_handler(inline);
     let mut terminal = setup(inline, inline_list_size)?;
