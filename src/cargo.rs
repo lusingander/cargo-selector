@@ -6,7 +6,7 @@ use std::{
 
 use cargo_metadata::{Metadata as CargoMetadata, MetadataCommand, Target as CargoTarget};
 
-use crate::{Target, TargetKind};
+use crate::{Action, Target, TargetKind};
 
 fn convert(metadata: CargoMetadata, current_dir: &Path) -> Vec<Target> {
     let mut targets = Vec::new();
@@ -59,7 +59,11 @@ pub fn get_all_targets() -> Vec<Target> {
     convert(metadata, &current_dir)
 }
 
-pub fn exec_cargo_run(target: &Target) {
+pub fn exec_cargo_run(target: &Target, action: &Action) {
+    let action = match action {
+        Action::Run => "run",
+        Action::Build => "build",
+    };
     let kind = match target.kind {
         TargetKind::Bin => "--bin",
         TargetKind::Example => "--example",
@@ -67,9 +71,9 @@ pub fn exec_cargo_run(target: &Target) {
     let name = &target.name;
 
     let mut cmd = Command::new("cargo");
-    cmd.arg("run").arg(kind).arg(name);
+    cmd.arg(action).arg(kind).arg(name);
 
-    let mut cmd_str = format!("cargo run {} {}", kind, name);
+    let mut cmd_str = format!("cargo {} {} {}", action, kind, name);
 
     if !target.required_features.is_empty() {
         let features = target.required_features.join(" ");

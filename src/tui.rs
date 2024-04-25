@@ -10,13 +10,14 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, util::digits, Target, TargetKind};
+use crate::{key_code, key_code_char, util::digits, Action, Target, TargetKind};
 
 pub struct Tui {
     targets: Vec<Target>,
     filtered: Vec<usize>,
     cursor: usize,
     input: Input,
+    action: Action,
 
     list_height: usize,
     list_offset: usize,
@@ -24,7 +25,7 @@ pub struct Tui {
 
 pub enum Ret {
     Quit,
-    Selected(Target),
+    Selected(Target, Action),
     NotSelected,
 }
 
@@ -36,6 +37,7 @@ impl Tui {
             filtered,
             cursor: 0,
             input: Input::default(),
+            action: Action::Run,
             list_height: Tui::calc_list_height(term_size.height),
             list_offset: 0,
         }
@@ -56,9 +58,12 @@ impl Tui {
                     key_code!(KeyCode::Up) | key_code_char!('p', Ctrl) => {
                         self.select_prev();
                     }
+                    key_code!(KeyCode::Tab) => {
+                        self.toggle_action();
+                    }
                     key_code!(KeyCode::Enter) => {
                         let ret = match self.get_current_target() {
-                            Some(target) => Ret::Selected(target),
+                            Some(target) => Ret::Selected(target, self.action),
                             None => Ret::NotSelected,
                         };
                         return Ok(ret);
@@ -98,6 +103,13 @@ impl Tui {
         }
     }
 
+    fn toggle_action(&mut self) {
+        self.action = match self.action {
+            Action::Run => Action::Build,
+            Action::Build => Action::Run,
+        };
+    }
+
     fn get_current_target(&self) -> Option<Target> {
         self.filtered
             .get(self.cursor)
@@ -127,11 +139,14 @@ impl Tui {
     fn render_input(&self, f: &mut Frame, area: Rect) {
         let targets_num_digits = digits(self.targets.len());
         let max_w = area.width as usize;
-        let label_w = 5;
+        let label_w = 7;
         let num_w = targets_num_digits * 2 + 5;
         let input_w = max_w - (label_w + num_w + 3);
 
-        let label = " run ";
+        let (label, label_color) = match self.action {
+            Action::Run => ("  run  ", Color::Green),
+            Action::Build => (" build ", Color::Blue),
+        };
         let input = format!("{:input_w$}", self.input.value());
         let nums = if self.filtered.is_empty() {
             "".to_string()
@@ -143,7 +158,7 @@ impl Tui {
             )
         };
         let spans = vec![
-            label.bg(Color::Green).fg(Color::Black),
+            label.bg(label_color).fg(Color::Black),
             " ".into(),
             input.into(),
             " ".into(),
@@ -153,7 +168,7 @@ impl Tui {
         let line = Paragraph::new(Line::from(spans));
         f.render_widget(line, area);
 
-        let x = area.x + 6 + (self.input.visual_cursor() as u16);
+        let x = area.x + 8 + (self.input.visual_cursor() as u16);
         let y = area.y;
         f.set_cursor(x, y);
     }

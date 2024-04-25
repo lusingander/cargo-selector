@@ -52,6 +52,12 @@ pub enum TargetKind {
     Example,
 }
 
+#[derive(Clone, Copy)]
+pub enum Action {
+    Run,
+    Build,
+}
+
 fn setup(
     inline: bool,
     inline_list_size: u16,
@@ -111,7 +117,7 @@ fn main() -> std::io::Result<()> {
 
     ret.map(|t| match t {
         Ret::Quit => {}
-        Ret::Selected(t) => cargo::exec_cargo_run(&t),
+        Ret::Selected(t, a) => cargo::exec_cargo_run(&t, &a),
         Ret::NotSelected => eprintln!("no command selected"),
     })
 }
