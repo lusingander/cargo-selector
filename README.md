@@ -43,6 +43,8 @@ $ cargo run --bin xyz [--features "foo bar"]
 $ cargo run --example xyz [--features "foo bar"]
 ```
 
+By switching the action, you can also run only the build.
+
 ### Keybindings
 
 | Key                               | Description                                  |
@@ -50,6 +52,7 @@ $ cargo run --example xyz [--features "foo bar"]
 | <kbd>Down</kbd> <kbd>Ctrl+n</kbd> | cursor down                                  |
 | <kbd>Up</kbd> <kbd>Ctrl+p</kbd>   | cursor up                                    |
 | <kbd>Enter</kbd>                  | execute `cargo run --bin/example <selected>` |
+| <kbd>Tab</kbd>                    | switch actions                               |
 | <kbd>Esc</kbd> <kbd>Ctrl+c</kbd>  | quit                                         |
 
 ## License
