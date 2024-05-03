@@ -86,7 +86,7 @@ pub fn exec_cargo_run(target: &Target, action: &Action) {
 
     // todo: return exit code
     cmd.spawn()
-        .expect("failed to spawn cargo run command")
+        .unwrap_or_else(|_| panic!("failed to spawn cargo {} command", action))
         .wait()
         .unwrap();
 }
