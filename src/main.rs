@@ -9,11 +9,14 @@ use std::{
 };
 
 use clap::{Args, Parser, ValueEnum};
-use crossterm::{
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+use ratatui::{
+    backend::CrosstermBackend,
+    crossterm::{
+        execute,
+        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    },
+    Terminal, TerminalOptions, Viewport,
 };
-use ratatui::{backend::CrosstermBackend, Terminal, TerminalOptions, Viewport};
 use tui::{Ret, Tui};
 
 #[derive(Debug, Parser)]

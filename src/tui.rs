@@ -1,7 +1,7 @@
 use console::truncate_str;
-use crossterm::event::{self, Event, KeyCode};
 use ratatui::{
     backend::Backend,
+    crossterm::event::{self, Event, KeyCode},
     layout::{Constraint, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Text},
