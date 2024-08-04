@@ -14,6 +14,12 @@ Cargo subcommand to select and execute binary/example targets
 $ cargo install cargo-selector
 ```
 
+### AUR
+
+```
+$ paru -S cargo-selector
+```
+
 ## Usage
 
 ```
