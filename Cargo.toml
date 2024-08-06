@@ -13,7 +13,7 @@ categories = ["development-tools::cargo-plugins", "command-line-utilities"]
 
 [dependencies]
 cargo_metadata = "0.18.1"
-clap = { version = "4.5.4", features = ["derive"] }
+clap = { version = "4.5.13", features = ["derive"] }
 console = "0.15.8"
 ratatui = "0.27.0"
-tui-input = "0.8.0"
+tui-input = "0.9.0"
