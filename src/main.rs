@@ -110,7 +110,7 @@ fn main() -> std::io::Result<()> {
 
     initialize_panic_handler(inline);
     let mut terminal = setup(inline, inline_list_size)?;
-    let term_size = terminal.get_frame().size();
+    let term_size = terminal.get_frame().area();
     let ret = Tui::new(targets, term_size).run(&mut terminal);
     shutdown(inline)?;
 

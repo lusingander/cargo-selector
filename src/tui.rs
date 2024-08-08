@@ -131,7 +131,7 @@ impl Tui {
     }
 
     fn render(&self, f: &mut Frame) {
-        let chunks = Layout::vertical([Constraint::Length(1), Constraint::Min(0)]).split(f.size());
+        let chunks = Layout::vertical([Constraint::Length(1), Constraint::Min(0)]).split(f.area());
         self.render_input(f, chunks[0]);
         self.render_list(f, chunks[1]);
     }
@@ -170,7 +170,7 @@ impl Tui {
 
         let x = area.x + 8 + (self.input.visual_cursor() as u16);
         let y = area.y;
-        f.set_cursor(x, y);
+        f.set_cursor_position((x, y));
     }
 
     fn render_list(&self, f: &mut Frame, area: Rect) {
