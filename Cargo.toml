@@ -11,6 +11,8 @@ license = "MIT"
 keywords = ["cargo", "subcommand", "plugin", "tui"]
 categories = ["development-tools::cargo-plugins", "command-line-utilities"]
 
+exclude = ["/.github", "/img", "_config.yml"]
+
 [dependencies]
 cargo_metadata = "0.18.1"
 clap = { version = "4.5.13", features = ["derive"] }
