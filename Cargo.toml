@@ -15,7 +15,7 @@ exclude = ["/.github", "/img", "_config.yml"]
 
 [dependencies]
 cargo_metadata = "0.18.1"
-clap = { version = "4.5.13", features = ["derive"] }
+clap = { version = "4.5.16", features = ["derive"] }
 console = "0.15.8"
-ratatui = "0.28.0"
+ratatui = "0.28.1"
 tui-input = "0.10.0"
