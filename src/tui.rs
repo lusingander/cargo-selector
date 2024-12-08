@@ -15,13 +15,18 @@ use crate::{util::digits, Action, Target, TargetKind};
 
 pub struct Tui {
     targets: Vec<Target>,
-    filtered: Vec<usize>,
+    filtered: Vec<FilteredTarget>,
     cursor: usize,
     input: Input,
     action: Action,
 
     list_height: usize,
     list_offset: usize,
+}
+
+struct FilteredTarget {
+    index: usize,
+    match_indices: Vec<usize>,
 }
 
 pub enum Ret {
@@ -32,16 +37,17 @@ pub enum Ret {
 
 impl Tui {
     pub fn new(targets: Vec<Target>, term_size: Rect) -> Tui {
-        let filtered = (0..targets.len()).collect();
-        Tui {
+        let mut tui = Tui {
             targets,
-            filtered,
+            filtered: Vec::new(),
             cursor: 0,
             input: Input::default(),
             action: Action::Run,
             list_height: Tui::calc_list_height(term_size.height),
             list_offset: 0,
-        }
+        };
+        tui.update_filter();
+        tui
     }
 
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> std::io::Result<Ret> {
@@ -114,7 +120,7 @@ impl Tui {
     fn get_current_target(&self) -> Option<Target> {
         self.filtered
             .get(self.cursor)
-            .and_then(|i| self.targets.get(*i))
+            .and_then(|t| self.targets.get(t.index))
             .cloned()
     }
 
@@ -124,8 +130,15 @@ impl Tui {
             .targets
             .iter()
             .enumerate()
-            .filter(|(_, t)| t.name.contains(s))
-            .map(|(i, _)| i)
+            .filter_map(|(i, t)| {
+                t.name.find(s).map(|pos| {
+                    let match_indices = (pos..pos + s.len()).collect();
+                    FilteredTarget {
+                        index: i,
+                        match_indices,
+                    }
+                })
+            })
             .collect();
         self.cursor = 0;
         self.list_offset = 0;
@@ -182,10 +195,10 @@ impl Tui {
             .enumerate()
             .skip(self.list_offset)
             .take(self.list_height)
-            .flat_map(|(i, fi)| {
+            .flat_map(|(i, ft)| {
                 let selected = i == self.cursor;
                 self.targets
-                    .get(*fi)
+                    .get(ft.index)
                     .map(|t| self.build_list_item(t, selected, max_w))
             })
             .collect();
