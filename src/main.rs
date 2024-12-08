@@ -54,8 +54,9 @@ pub enum TargetKind {
     Example,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub enum Action {
+    #[default]
     Run,
     Build,
 }

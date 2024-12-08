@@ -13,6 +13,7 @@ use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{util::digits, Action, Target, TargetKind};
 
+#[derive(Default)]
 pub struct Tui {
     targets: Vec<Target>,
     filtered: Vec<FilteredTarget>,
@@ -39,12 +40,8 @@ impl Tui {
     pub fn new(targets: Vec<Target>, term_size: Rect) -> Tui {
         let mut tui = Tui {
             targets,
-            filtered: Vec::new(),
-            cursor: 0,
-            input: Input::default(),
-            action: Action::Run,
             list_height: Tui::calc_list_height(term_size.height),
-            list_offset: 0,
+            ..Default::default()
         };
         tui.update_filter();
         tui
