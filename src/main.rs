@@ -1,5 +1,4 @@
 mod cargo;
-mod macros;
 mod tui;
 mod util;
 

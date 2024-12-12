@@ -1,4 +1,5 @@
 use console::truncate_str;
+use laurier::{key_code, key_code_char};
 use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
@@ -10,7 +11,7 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{key_code, key_code_char, util::digits, Action, Target, TargetKind};
+use crate::{util::digits, Action, Target, TargetKind};
 
 pub struct Tui {
     targets: Vec<Target>,
