@@ -1,5 +1,5 @@
 use console::truncate_str;
-use laurier::{key_code, key_code_char};
+use laurier::{highlight::highlight_matched_text, key_code, key_code_char};
 use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
@@ -196,14 +196,20 @@ impl Tui {
                 let selected = i == self.cursor;
                 self.targets
                     .get(ft.index)
-                    .map(|t| self.build_list_item(t, selected, max_w))
+                    .map(|t| self.build_list_item(t, selected, max_w, &ft.match_indices))
             })
             .collect();
         let list = List::new(items);
         f.render_widget(list, area);
     }
 
-    fn build_list_item(&self, target: &Target, selected: bool, max_w: usize) -> ListItem {
+    fn build_list_item(
+        &self,
+        target: &Target,
+        selected: bool,
+        max_w: usize,
+        matched_indices: &[usize],
+    ) -> ListItem {
         let kind_w: usize = 7;
         let name_w: usize = 25;
         let path_w: usize = 30;
@@ -222,17 +228,29 @@ impl Tui {
             truncate_str(&s, features_w, "..").into()
         };
 
-        let spans = vec![
-            " ".into(),
-            format!("{:kind_w$}", kind).fg(Color::Blue),
-            " ".into(),
-            format!("{:name_w$}", name).fg(Color::White),
-            " ".into(),
-            format!("{:path_w$}", path).fg(Color::DarkGray),
-            " ".into(),
-            format!("{:features_w$}", features).fg(Color::DarkGray),
-            " ".into(),
-        ];
+        let mut name_mt = highlight_matched_text(name.to_string())
+            .matched_indices(matched_indices.to_vec())
+            .not_matched_style(Style::default().fg(Color::White))
+            .matched_style(Style::default().fg(Color::Red));
+        if name.ends_with("..") {
+            name_mt = name_mt.ellipsis("..");
+        }
+        let mut name_spans = name_mt.into_spans();
+        if name.len() < name_w {
+            name_spans.push(" ".repeat(name_w - name.len()).into());
+        }
+
+        let mut spans = Vec::new();
+        spans.push(" ".into());
+        spans.push(format!("{:kind_w$}", kind).fg(Color::Blue));
+        spans.push(" ".into());
+        spans.extend(name_spans);
+        spans.push(" ".into());
+        spans.push(format!("{:path_w$}", path).fg(Color::DarkGray));
+        spans.push(" ".into());
+        spans.push(format!("{:features_w$}", features).fg(Color::DarkGray));
+        spans.push(" ".into());
+
         let line = Text::from(Line::from(spans));
         let style = if selected {
             Style::default().bg(Color::Yellow)
