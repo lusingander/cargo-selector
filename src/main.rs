@@ -17,9 +17,11 @@ use ratatui::{
     },
     Terminal, TerminalOptions, Viewport,
 };
-use tui::{Ret, Tui};
 
-use crate::matcher::Matcher;
+use crate::{
+    matcher::Matcher,
+    tui::{Ret, Tui},
+};
 
 #[derive(Debug, Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
