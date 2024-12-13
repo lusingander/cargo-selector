@@ -10,8 +10,8 @@ readme = "README.md"
 license = "MIT"
 keywords = ["cargo", "subcommand", "plugin", "tui"]
 categories = ["development-tools::cargo-plugins", "command-line-utilities"]
-
 exclude = ["/.github", "/img", "_config.yml"]
+rust-version = "1.79.0"
 
 [dependencies]
 cargo_metadata = "0.19.1"
