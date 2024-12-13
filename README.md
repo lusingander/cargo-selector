@@ -29,6 +29,7 @@ Options:
   -i, --inline                   Display list inline
   -n, --inline-list-size <SIZE>  List size [default: 10]
   -k, --kind <NAME>              Target kind [possible values: bin, example]
+  -t, --match-type <TYPE>        Match type [default: substring] [possible values: substring, fuzzy]
   -h, --help                     Print help
   -V, --version                  Print version
 ```
