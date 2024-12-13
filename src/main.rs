@@ -1,4 +1,5 @@
 mod cargo;
+mod matcher;
 mod tui;
 mod util;
 
@@ -17,6 +18,8 @@ use ratatui::{
     Terminal, TerminalOptions, Viewport,
 };
 use tui::{Ret, Tui};
+
+use crate::matcher::Matcher;
 
 #[derive(Debug, Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
@@ -38,6 +41,10 @@ struct SelectorArgs {
     /// Target kind
     #[arg(short, long, value_name = "NAME")]
     kind: Option<TargetKind>,
+
+    /// Match type
+    #[arg(short = 't', long, default_value = "substring", value_name = "TYPE")]
+    match_type: MatchType,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +59,21 @@ pub struct Target {
 pub enum TargetKind {
     Bin,
     Example,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum MatchType {
+    Substring,
+    Fuzzy,
+}
+
+impl MatchType {
+    fn matcher(self) -> Matcher {
+        match self {
+            MatchType::Substring => Matcher::substring(),
+            MatchType::Fuzzy => Matcher::fuzzy(),
+        }
+    }
 }
 
 #[derive(Default, Clone, Copy)]
@@ -101,6 +123,7 @@ fn main() -> std::io::Result<()> {
         inline,
         inline_list_size,
         kind,
+        match_type,
     } = args;
 
     let mut targets = cargo::get_all_targets();
@@ -111,7 +134,8 @@ fn main() -> std::io::Result<()> {
     initialize_panic_handler(inline);
     let mut terminal = setup(inline, inline_list_size)?;
     let term_size = terminal.get_frame().area();
-    let ret = Tui::new(targets, term_size).run(&mut terminal);
+    let matcher = match_type.matcher();
+    let ret = Tui::new(targets, term_size, matcher).run(&mut terminal);
     shutdown(inline)?;
 
     if inline {

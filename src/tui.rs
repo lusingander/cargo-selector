@@ -11,7 +11,7 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{util::digits, Action, Target, TargetKind};
+use crate::{matcher::Matcher, util::digits, Action, Target, TargetKind};
 
 #[derive(Default)]
 pub struct Tui {
@@ -23,6 +23,8 @@ pub struct Tui {
 
     list_height: usize,
     list_offset: usize,
+
+    matcher: Matcher,
 }
 
 struct FilteredTarget {
@@ -37,10 +39,11 @@ pub enum Ret {
 }
 
 impl Tui {
-    pub fn new(targets: Vec<Target>, term_size: Rect) -> Tui {
+    pub fn new(targets: Vec<Target>, term_size: Rect, matcher: Matcher) -> Tui {
         let mut tui = Tui {
             targets,
             list_height: Tui::calc_list_height(term_size.height),
+            matcher,
             ..Default::default()
         };
         tui.update_filter();
@@ -128,13 +131,12 @@ impl Tui {
             .iter()
             .enumerate()
             .filter_map(|(i, t)| {
-                t.name.find(s).map(|pos| {
-                    let match_indices = (pos..pos + s.len()).collect();
-                    FilteredTarget {
+                self.matcher
+                    .match_indices(&t.name, s)
+                    .map(|indices| FilteredTarget {
                         index: i,
-                        match_indices,
-                    }
-                })
+                        match_indices: indices,
+                    })
             })
             .collect();
         self.cursor = 0;
