@@ -73,20 +73,32 @@ pub fn exec_cargo_run(target: &Target, action: &Action) {
     let mut cmd = Command::new("cargo");
     cmd.arg(action).arg(kind).arg(name);
 
-    let mut cmd_str = format!("cargo {} {} {}", action, kind, name);
+    let require_features = !target.required_features.is_empty();
 
-    if !target.required_features.is_empty() {
+    if require_features {
         let features = target.required_features.join(" ");
         cmd.arg("--features").arg(&features);
-
-        cmd_str.push_str(&format!(" --features \"{}\"", &features));
     };
 
-    eprintln!("{}", cmd_str);
+    eprintln!("{}", cmd_str(&cmd, require_features));
 
     // todo: return exit code
     cmd.spawn()
         .unwrap_or_else(|_| panic!("failed to spawn cargo {} command", action))
         .wait()
         .unwrap();
+}
+
+fn cmd_str(cmd: &Command, require_features: bool) -> String {
+    let program = cmd.get_program().to_string_lossy();
+    let mut args = cmd
+        .get_args()
+        .map(|a| a.to_string_lossy())
+        .collect::<Vec<_>>();
+    if require_features {
+        if let Some(a) = args.last_mut() {
+            *a = format!("\"{}\"", a).into();
+        }
+    }
+    format!("{} {}", program, args.join(" "))
 }
