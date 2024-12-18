@@ -13,6 +13,8 @@ use tui_input::{backend::crossterm::EventHandler, Input};
 
 use crate::{matcher::Matcher, util::digits, Action, Target, TargetKind};
 
+const ELLIPSIS: &str = "..";
+
 #[derive(Default)]
 pub struct Tui {
     targets: Vec<Target>,
@@ -221,21 +223,21 @@ impl Tui {
             TargetKind::Bin => "bin",
             TargetKind::Example => "example",
         };
-        let name = truncate_str(&target.name, name_w, "..");
-        let path = truncate_str(&target.path, path_w, "..");
+        let name = truncate_str(&target.name, name_w, ELLIPSIS);
+        let path = truncate_str(&target.path, path_w, ELLIPSIS);
         let features = if target.required_features.is_empty() {
             "".to_string()
         } else {
             let s = format!("--features {:?}", target.required_features);
-            truncate_str(&s, features_w, "..").into()
+            truncate_str(&s, features_w, ELLIPSIS).into()
         };
 
         let mut name_mt = highlight_matched_text(name.to_string())
             .matched_indices(matched_indices.to_vec())
             .not_matched_style(Style::default().fg(Color::White))
             .matched_style(Style::default().fg(Color::Red));
-        if name.ends_with("..") {
-            name_mt = name_mt.ellipsis("..");
+        if name.ends_with(ELLIPSIS) {
+            name_mt = name_mt.ellipsis(ELLIPSIS);
         }
         let mut name_spans = name_mt.into_spans();
         if name.len() < name_w {
