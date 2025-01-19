@@ -5,7 +5,9 @@ mod util;
 
 use std::{
     io::{stderr, BufWriter, Stderr},
+    os::unix::process::ExitStatusExt as _,
     panic,
+    process::ExitCode,
 };
 
 use clap::{Args, Parser, ValueEnum};
@@ -119,7 +121,7 @@ fn initialize_panic_handler(inline: bool) {
     }));
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> std::io::Result<ExitCode> {
     let Cli::Selector(args) = Cli::parse();
     let SelectorArgs {
         inline,
@@ -145,8 +147,20 @@ fn main() -> std::io::Result<()> {
     }
 
     ret.map(|t| match t {
-        Ret::Quit => {}
-        Ret::Selected(t, a) => cargo::exec_cargo_run(&t, &a),
-        Ret::NotSelected => eprintln!("no command selected"),
+        Ret::Quit => ExitCode::SUCCESS,
+        Ret::Selected(t, a) => {
+            let status = cargo::exec_cargo_run(&t, &a);
+            if let Some(code) = status.code() {
+                ExitCode::from(code as u8)
+            } else if let Some(signal) = status.signal() {
+                ExitCode::from(signal as u8 + 128)
+            } else {
+                ExitCode::FAILURE
+            }
+        }
+        Ret::NotSelected => {
+            eprintln!("no command selected");
+            ExitCode::SUCCESS
+        }
     })
 }

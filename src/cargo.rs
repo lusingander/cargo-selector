@@ -1,7 +1,7 @@
 use std::{
     env,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, ExitStatus},
 };
 
 use cargo_metadata::{Metadata as CargoMetadata, MetadataCommand, Target as CargoTarget};
@@ -59,7 +59,7 @@ pub fn get_all_targets() -> Vec<Target> {
     convert(metadata, &current_dir)
 }
 
-pub fn exec_cargo_run(target: &Target, action: &Action) {
+pub fn exec_cargo_run(target: &Target, action: &Action) -> ExitStatus {
     let action = match action {
         Action::Run => "run",
         Action::Build => "build",
@@ -82,11 +82,10 @@ pub fn exec_cargo_run(target: &Target, action: &Action) {
 
     eprintln!("{}", cmd_str(&cmd, require_features));
 
-    // todo: return exit code
     cmd.spawn()
         .unwrap_or_else(|_| panic!("failed to spawn cargo {} command", action))
         .wait()
-        .unwrap();
+        .unwrap()
 }
 
 fn cmd_str(cmd: &Command, require_features: bool) -> String {
