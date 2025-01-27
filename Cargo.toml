@@ -15,7 +15,7 @@ rust-version = "1.79.0"
 
 [dependencies]
 cargo_metadata = "0.19.1"
-clap = { version = "4.5.26", features = ["derive"] }
+clap = { version = "4.5.27", features = ["derive"] }
 console = "0.15.10"
 fuzzy-matcher = "0.3.7"
 laurier = "0.1.0"
