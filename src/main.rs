@@ -5,9 +5,8 @@ mod util;
 
 use std::{
     io::{stderr, BufWriter, Stderr},
-    os::unix::process::ExitStatusExt as _,
     panic,
-    process::ExitCode,
+    process::{ExitCode, ExitStatus},
 };
 
 use clap::{Args, Parser, ValueEnum};
@@ -24,6 +23,9 @@ use crate::{
     matcher::Matcher,
     tui::{Ret, Tui},
 };
+
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt as _;
 
 #[derive(Debug, Parser)]
 #[command(name = "cargo", bin_name = "cargo")]
@@ -121,6 +123,26 @@ fn initialize_panic_handler(inline: bool) {
     }));
 }
 
+#[cfg(unix)]
+fn to_exit_code(status: ExitStatus) -> ExitCode {
+    if let Some(code) = status.code() {
+        ExitCode::from(code as u8)
+    } else if let Some(signal) = status.signal() {
+        ExitCode::from(signal as u8 + 128)
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
+#[cfg(windows)]
+fn to_exit_code(status: ExitStatus) -> ExitCode {
+    if let Some(code) = status.code() {
+        ExitCode::from(code as u8)
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
 fn main() -> std::io::Result<ExitCode> {
     let Cli::Selector(args) = Cli::parse();
     let SelectorArgs {
@@ -150,13 +172,7 @@ fn main() -> std::io::Result<ExitCode> {
         Ret::Quit => ExitCode::SUCCESS,
         Ret::Selected(t, a) => {
             let status = cargo::exec_cargo_run(&t, &a);
-            if let Some(code) = status.code() {
-                ExitCode::from(code as u8)
-            } else if let Some(signal) = status.signal() {
-                ExitCode::from(signal as u8 + 128)
-            } else {
-                ExitCode::FAILURE
-            }
+            to_exit_code(status)
         }
         Ret::NotSelected => {
             eprintln!("no command selected");
