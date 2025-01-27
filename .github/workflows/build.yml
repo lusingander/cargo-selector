@@ -18,7 +18,11 @@ jobs:
         versions:
           - stable
           - '1.79.0' # MSRV
-    runs-on: ubuntu-latest
+        os:
+          - ubuntu-24.04
+          - macos-14
+          - windows-2022
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
