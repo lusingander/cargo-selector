@@ -89,7 +89,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-selector"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cargo_metadata",
  "clap",
