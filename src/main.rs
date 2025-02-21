@@ -1,4 +1,5 @@
 mod cargo;
+mod config;
 mod matcher;
 mod tui;
 mod util;
@@ -18,8 +19,10 @@ use ratatui::{
     },
     Terminal, TerminalOptions, Viewport,
 };
+use serde::Deserialize;
 
 use crate::{
+    config::Config,
     matcher::Matcher,
     tui::{Ret, Tui},
 };
@@ -49,8 +52,8 @@ struct SelectorArgs {
     kind: Option<TargetKind>,
 
     /// Match type
-    #[arg(short = 't', long, default_value = "substring", value_name = "TYPE")]
-    match_type: MatchType,
+    #[arg(short = 't', long, value_name = "TYPE")]
+    match_type: Option<MatchType>,
 }
 
 #[derive(Debug, Clone)]
@@ -67,8 +70,10 @@ pub enum TargetKind {
     Example,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, ValueEnum, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum MatchType {
+    #[default]
     Substring,
     Fuzzy,
 }
@@ -151,6 +156,10 @@ fn main() -> std::io::Result<ExitCode> {
         kind,
         match_type,
     } = args;
+
+    let config = Config::load();
+
+    let match_type = match_type.or(config.match_type).unwrap_or_default();
 
     let mut targets = cargo::get_all_targets();
     if let Some(kind) = kind {
