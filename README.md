@@ -29,7 +29,7 @@ Options:
   -i, --inline                   Display list inline
   -n, --inline-list-size <SIZE>  List size [default: 10]
   -k, --kind <NAME>              Target kind [possible values: bin, example]
-  -t, --match-type <TYPE>        Match type [default: substring] [possible values: substring, fuzzy]
+  -t, --match-type <TYPE>        Match type [possible values: substring, fuzzy]
   -h, --help                     Print help
   -V, --version                  Print version
 ```
@@ -61,6 +61,18 @@ By switching the action, you can also run only the build.
 | <kbd>Enter</kbd>                  | execute `cargo run --bin/example <selected>` |
 | <kbd>Tab</kbd>                    | switch actions                               |
 | <kbd>Esc</kbd> <kbd>Ctrl+c</kbd>  | quit                                         |
+
+### Config
+
+If the `CARGO_SELECTOR_CONFIG` environment variable specifies the path to the config file, the config will be loaded.
+
+The config file uses the following format:
+
+```toml
+# Sets the default match type. If argument `-t` or `--match-type` is specified, it will be overridden.
+# type: enum ("substring" | "fuzzy")
+match_type = "substring"
+```
 
 ## License
 
