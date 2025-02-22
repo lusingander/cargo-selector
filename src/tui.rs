@@ -4,14 +4,14 @@ use ratatui::{
     backend::Backend,
     crossterm::event::{self, Event, KeyCode},
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::{Style, Stylize},
     text::{Line, Text},
-    widgets::{List, ListItem, Paragraph},
+    widgets::{Block, List, ListItem, Paragraph},
     Frame, Terminal,
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{matcher::Matcher, util::digits, Action, Target, TargetKind};
+use crate::{color::ColorTheme, matcher::Matcher, util::digits, Action, Target, TargetKind};
 
 const ELLIPSIS: &str = "..";
 
@@ -27,6 +27,7 @@ pub struct Tui {
     list_offset: usize,
 
     matcher: Matcher,
+    theme: ColorTheme,
 }
 
 struct FilteredTarget {
@@ -41,11 +42,12 @@ pub enum Ret {
 }
 
 impl Tui {
-    pub fn new(targets: Vec<Target>, term_size: Rect, matcher: Matcher) -> Tui {
+    pub fn new(targets: Vec<Target>, term_size: Rect, matcher: Matcher, theme: ColorTheme) -> Tui {
         let mut tui = Tui {
             targets,
             list_height: Tui::calc_list_height(term_size.height),
             matcher,
+            theme,
             ..Default::default()
         };
         tui.update_filter();
@@ -146,6 +148,9 @@ impl Tui {
     }
 
     fn render(&self, f: &mut Frame) {
+        let block = Block::default().bg(self.theme.bg);
+        f.render_widget(block, f.area());
+
         let chunks = Layout::vertical([Constraint::Length(1), Constraint::Min(0)]).split(f.area());
         self.render_input(f, chunks[0]);
         self.render_list(f, chunks[1]);
@@ -158,9 +163,17 @@ impl Tui {
         let num_w = targets_num_digits * 2 + 5;
         let input_w = max_w - (label_w + num_w + 3);
 
-        let (label, label_color) = match self.action {
-            Action::Run => ("  run  ", Color::Green),
-            Action::Build => (" build ", Color::Blue),
+        let (label, label_bg, label_fg) = match self.action {
+            Action::Run => (
+                "  run  ",
+                self.theme.action_run_bg,
+                self.theme.action_run_fg,
+            ),
+            Action::Build => (
+                " build ",
+                self.theme.action_build_bg,
+                self.theme.action_build_fg,
+            ),
         };
         let input = format!("{:input_w$}", self.input.value());
         let nums = if self.filtered.is_empty() {
@@ -173,11 +186,11 @@ impl Tui {
             )
         };
         let spans = vec![
-            label.bg(label_color).fg(Color::Black),
+            label.bg(label_bg).fg(label_fg),
             " ".into(),
-            input.into(),
+            input.fg(self.theme.input_fg),
             " ".into(),
-            nums.fg(Color::DarkGray),
+            nums.fg(self.theme.numbers_fg),
             " ".into(),
         ];
         let line = Paragraph::new(Line::from(spans));
@@ -234,8 +247,8 @@ impl Tui {
 
         let mut name_mt = highlight_matched_text(name.to_string())
             .matched_indices(matched_indices.to_vec())
-            .not_matched_style(Style::default().fg(Color::White))
-            .matched_style(Style::default().fg(Color::Red));
+            .not_matched_style(Style::default().fg(self.theme.name_fg))
+            .matched_style(Style::default().fg(self.theme.name_match_fg));
         if name.ends_with(ELLIPSIS) {
             name_mt = name_mt.ellipsis(ELLIPSIS);
         }
@@ -246,18 +259,18 @@ impl Tui {
 
         let mut spans = Vec::new();
         spans.push(" ".into());
-        spans.push(format!("{:kind_w$}", kind).fg(Color::Blue));
+        spans.push(format!("{:kind_w$}", kind).fg(self.theme.kind_fg));
         spans.push(" ".into());
         spans.extend(name_spans);
         spans.push(" ".into());
-        spans.push(format!("{:path_w$}", path).fg(Color::DarkGray));
+        spans.push(format!("{:path_w$}", path).fg(self.theme.path_fg));
         spans.push(" ".into());
-        spans.push(format!("{:features_w$}", features).fg(Color::DarkGray));
+        spans.push(format!("{:features_w$}", features).fg(self.theme.features_fg));
         spans.push(" ".into());
 
         let line = Text::from(Line::from(spans));
         let style = if selected {
-            Style::default().bg(Color::Yellow)
+            Style::default().bg(self.theme.selected_bg)
         } else {
             Style::default()
         };

@@ -1,4 +1,5 @@
 mod cargo;
+mod color;
 mod config;
 mod matcher;
 mod tui;
@@ -22,6 +23,7 @@ use ratatui::{
 use serde::Deserialize;
 
 use crate::{
+    color::ColorTheme,
     config::Config,
     matcher::Matcher,
     tui::{Ret, Tui},
@@ -158,8 +160,9 @@ fn main() -> std::io::Result<ExitCode> {
     } = args;
 
     let config = Config::load();
-
     let match_type = match_type.or(config.match_type).unwrap_or_default();
+
+    let theme = ColorTheme::default();
 
     let mut targets = cargo::get_all_targets();
     if let Some(kind) = kind {
@@ -170,7 +173,7 @@ fn main() -> std::io::Result<ExitCode> {
     let mut terminal = setup(inline, inline_list_size)?;
     let term_size = terminal.get_frame().area();
     let matcher = match_type.matcher();
-    let ret = Tui::new(targets, term_size, matcher).run(&mut terminal);
+    let ret = Tui::new(targets, term_size, matcher, theme).run(&mut terminal);
     shutdown(inline)?;
 
     if inline {
