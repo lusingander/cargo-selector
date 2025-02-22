@@ -72,6 +72,30 @@ The config file uses the following format:
 # Sets the default match type. If argument `-t` or `--match-type` is specified, it will be overridden.
 # type: enum ("substring" | "fuzzy")
 match_type = "substring"
+
+# Sets the display colors.
+# Colors can be set in one of the following formats:
+# - ANSI color name
+#   - "red", "bright-blue"
+# - 8-bit color (256-color) index values
+#   - "34", "128", "255"
+# - 24-bit true color hex codes
+#   - "#abcdef"
+# type: string
+[color]
+bg = "reset"
+action_run_bg = "green"
+action_run_fg = "black"
+action_build_bg = "blue"
+action_build_fg = "black"
+input_fg = "reset"
+numbers_fg = "darkgrey"
+kind_fg = "blue"
+name_fg = "white"
+name_match_fg = "red"
+path_fg = "darkgrey"
+features_fg = "darkgrey"
+selected_bg = "yellow"
 ```
 
 ## License
