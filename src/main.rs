@@ -22,7 +22,7 @@ use ratatui::{
 use serde::Deserialize;
 
 use crate::{
-    config::{ColorTheme, Config},
+    config::Config,
     matcher::Matcher,
     tui::{Ret, Tui},
 };
@@ -159,8 +159,7 @@ fn main() -> std::io::Result<ExitCode> {
 
     let config = Config::load();
     let match_type = match_type.or(config.match_type).unwrap_or_default();
-
-    let theme = ColorTheme::default();
+    let theme = config.color;
 
     let mut targets = cargo::get_all_targets();
     if let Some(kind) = kind {

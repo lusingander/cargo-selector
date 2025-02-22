@@ -2,21 +2,26 @@ use std::{env, path::PathBuf};
 
 use ratatui::style::Color;
 use serde::Deserialize;
+use umbra::optional;
 
 use crate::MatchType;
 
 const CONFIG_PATH_ENV_VAR: &str = "CARGO_SELECTOR_CONFIG";
 
-#[derive(Debug, Default, PartialEq, Eq, Deserialize)]
+#[optional(derives = [Deserialize])]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Config {
     pub match_type: Option<MatchType>,
+    #[nested]
+    pub color: ColorTheme,
 }
 
 impl Config {
     pub fn load() -> Config {
         if let Some(path) = config_file_path() {
             let content = std::fs::read_to_string(path).unwrap();
-            toml::from_str(&content).unwrap()
+            let config: OptionalConfig = toml::from_str(&content).unwrap();
+            config.into()
         } else {
             Config::default()
         }
@@ -27,6 +32,8 @@ fn config_file_path() -> Option<PathBuf> {
     env::var(CONFIG_PATH_ENV_VAR).map(PathBuf::from).ok()
 }
 
+#[optional(derives = [Deserialize])]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ColorTheme {
     pub bg: Color,
 
