@@ -11,7 +11,7 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{color::ColorTheme, matcher::Matcher, util::digits, Action, Target, TargetKind};
+use crate::{config::ColorTheme, matcher::Matcher, util::digits, Action, Target, TargetKind};
 
 const ELLIPSIS: &str = "..";
 

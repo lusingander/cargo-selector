@@ -1,5 +1,4 @@
 mod cargo;
-mod color;
 mod config;
 mod matcher;
 mod tui;
@@ -23,8 +22,7 @@ use ratatui::{
 use serde::Deserialize;
 
 use crate::{
-    color::ColorTheme,
-    config::Config,
+    config::{ColorTheme, Config},
     matcher::Matcher,
     tui::{Ret, Tui},
 };
