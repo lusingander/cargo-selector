@@ -30,7 +30,9 @@ Sleep 1s
 Ctrl+W
 Sleep 500ms
 
-Type@500ms "dem"
+Type@700ms "dm"
+Sleep 500ms
+Ctrl+N
 Sleep 500ms
 Ctrl+N
 Sleep 500ms
