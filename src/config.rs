@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::env;
 
 use ratatui::style::Color;
 use serde::Deserialize;
@@ -18,7 +18,7 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Config {
-        if let Some(path) = config_file_path() {
+        if let Ok(path) = env::var(CONFIG_PATH_ENV_VAR) {
             let content = std::fs::read_to_string(path).unwrap();
             let config: OptionalConfig = toml::from_str(&content).unwrap();
             config.into()
@@ -26,10 +26,6 @@ impl Config {
             Config::default()
         }
     }
-}
-
-fn config_file_path() -> Option<PathBuf> {
-    env::var(CONFIG_PATH_ENV_VAR).map(PathBuf::from).ok()
 }
 
 #[optional(derives = [Deserialize])]
