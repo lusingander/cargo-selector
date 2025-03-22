@@ -91,7 +91,7 @@ pub fn exec_cargo_run(
         });
     }
 
-    eprintln!("{}", cmd_str(&cmd, require_features));
+    eprintln!("{}", cmd_str(&cmd));
 
     cmd.spawn()
         .unwrap_or_else(|_| panic!("failed to spawn cargo {} command", action))
@@ -99,16 +99,46 @@ pub fn exec_cargo_run(
         .unwrap()
 }
 
-fn cmd_str(cmd: &Command, require_features: bool) -> String {
+fn cmd_str(cmd: &Command) -> String {
     let program = cmd.get_program().to_string_lossy();
-    let mut args = cmd
+    let args = cmd
         .get_args()
-        .map(|a| a.to_string_lossy())
+        .map(|a| {
+            let a = a.to_string_lossy();
+            if a.contains(char::is_whitespace) {
+                format!("\"{}\"", a).into()
+            } else {
+                a
+            }
+        })
         .collect::<Vec<_>>();
-    if require_features {
-        if let Some(a) = args.last_mut() {
-            *a = format!("\"{}\"", a).into();
-        }
-    }
     format!("{} {}", program, args.join(" "))
+}
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+
+    use super::*;
+
+    #[rstest]
+    #[case(
+        vec!["cargo", "run", "--bin", "xyz"],
+        "cargo run --bin xyz",
+    )]
+    #[case(
+        vec!["cargo", "build", "--example", "xyz", "--features", "feature1 feature2", "--release"],
+        "cargo build --example xyz --features \"feature1 feature2\" --release",
+    )]
+    #[case(
+        vec!["cargo", "run", "--bin", "xyz", "--", "-p", "Hello World", "-n", "1"],
+        "cargo run --bin xyz -- -p \"Hello World\" -n 1",
+    )]
+    fn test_cmd_str(#[case] args: Vec<&str>, #[case] expected: &str) {
+        let mut cmd = Command::new(args[0]);
+        args.iter().skip(1).for_each(|a| {
+            cmd.arg(a);
+        });
+        assert_eq!(cmd_str(&cmd), expected);
+    }
 }
