@@ -22,17 +22,7 @@ $ paru -S cargo-selector
 
 ## Usage
 
-```
-Usage: cargo selector [OPTIONS]
-
-Options:
-  -i, --inline                   Display list inline
-  -n, --inline-list-size <SIZE>  List size [default: 10]
-  -k, --kind <NAME>              Target kind [possible values: bin, example]
-  -t, --match-type <TYPE>        Match type [possible values: substring, fuzzy]
-  -h, --help                     Print help
-  -V, --version                  Print version
-```
+### Basic
 
 Run the command in the cargo project directory:
 
@@ -51,6 +41,35 @@ $ cargo run --example xyz [--features "foo bar"]
 ```
 
 By switching the action, you can also run only the build.
+
+### Options
+
+```
+Usage: cargo selector [OPTIONS]
+
+Options:
+  -i, --inline                   Display list inline
+  -n, --inline-list-size <SIZE>  List size [default: 10]
+  -k, --kind <NAME>              Target kind [possible values: bin, example]
+  -t, --match-type <TYPE>        Match type [possible values: substring, fuzzy]
+  -a, --additional-args <ARGS>   Additional arguments
+  -h, --help                     Print help
+  -V, --version                  Print version
+```
+
+#### -a, --additional-args
+
+If you run the command:
+
+```
+$ cargo selector -a "-- --foo 1"
+```
+
+Then select the command and it will run:
+
+```sh
+$ cargo run --bin xyz -- --foo 1
+```
 
 ### Keybindings
 
