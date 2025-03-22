@@ -59,7 +59,11 @@ pub fn get_all_targets() -> Vec<Target> {
     convert(metadata, &current_dir)
 }
 
-pub fn exec_cargo_run(target: &Target, action: &Action) -> ExitStatus {
+pub fn exec_cargo_run(
+    target: &Target,
+    action: &Action,
+    additional_args: Option<String>,
+) -> ExitStatus {
     let action = match action {
         Action::Run => "run",
         Action::Build => "build",
@@ -79,6 +83,13 @@ pub fn exec_cargo_run(target: &Target, action: &Action) -> ExitStatus {
         let features = target.required_features.join(" ");
         cmd.arg("--features").arg(&features);
     };
+
+    if let Some(args) = additional_args {
+        // todo: handle quoted arguments properly
+        args.split_whitespace().for_each(|a| {
+            cmd.arg(a);
+        });
+    }
 
     eprintln!("{}", cmd_str(&cmd, require_features));
 

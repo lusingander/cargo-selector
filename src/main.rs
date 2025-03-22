@@ -54,6 +54,10 @@ struct SelectorArgs {
     /// Match type
     #[arg(short = 't', long, value_name = "TYPE")]
     match_type: Option<MatchType>,
+
+    /// Additional arguments
+    #[arg(short, long, value_name = "ARGS", allow_hyphen_values = true)]
+    additional_args: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -155,6 +159,7 @@ fn main() -> std::io::Result<ExitCode> {
         inline_list_size,
         kind,
         match_type,
+        additional_args,
     } = args;
 
     let config = Config::load();
@@ -180,7 +185,7 @@ fn main() -> std::io::Result<ExitCode> {
     ret.map(|t| match t {
         Ret::Quit => ExitCode::SUCCESS,
         Ret::Selected(t, a) => {
-            let status = cargo::exec_cargo_run(&t, &a);
+            let status = cargo::exec_cargo_run(&t, &a, additional_args);
             to_exit_code(status)
         }
         Ret::NotSelected => {
