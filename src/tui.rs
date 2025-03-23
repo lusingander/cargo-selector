@@ -1,8 +1,8 @@
 use console::truncate_str;
-use laurier::{highlight::highlight_matched_text, key_code, key_code_char};
+use laurier::highlight::highlight_matched_text;
 use ratatui::{
     backend::Backend,
-    crossterm::event::{self, Event, KeyCode},
+    crossterm::event::{self, Event},
     layout::{Constraint, Layout, Rect},
     style::{Style, Stylize},
     text::{Line, Text},
@@ -11,7 +11,13 @@ use ratatui::{
 };
 use tui_input::{backend::crossterm::EventHandler, Input};
 
-use crate::{config::ColorTheme, matcher::Matcher, util::digits, Action, Target, TargetKind};
+use crate::{
+    config::ColorTheme,
+    event::{UserEvent, UserEventMapper},
+    matcher::Matcher,
+    util::digits,
+    Action, Target, TargetKind,
+};
 
 const ELLIPSIS: &str = "..";
 
@@ -27,6 +33,7 @@ pub struct Tui {
     list_offset: usize,
 
     matcher: Matcher,
+    mapper: UserEventMapper,
     theme: ColorTheme,
 }
 
@@ -47,6 +54,7 @@ impl Tui {
             targets,
             list_height: Tui::calc_list_height(term_size.height),
             matcher,
+            mapper: UserEventMapper::new(),
             theme,
             ..Default::default()
         };
@@ -59,20 +67,20 @@ impl Tui {
             terminal.draw(|f| self.render(f))?;
 
             match event::read()? {
-                Event::Key(key) => match key {
-                    key_code!(KeyCode::Esc) | key_code_char!('c', Ctrl) => {
+                Event::Key(key) => match self.mapper.find_event(key) {
+                    Some(UserEvent::Quit) => {
                         return Ok(Ret::Quit);
                     }
-                    key_code!(KeyCode::Down) | key_code_char!('n', Ctrl) => {
+                    Some(UserEvent::Down) => {
                         self.select_next();
                     }
-                    key_code!(KeyCode::Up) | key_code_char!('p', Ctrl) => {
+                    Some(UserEvent::Up) => {
                         self.select_prev();
                     }
-                    key_code!(KeyCode::Tab) => {
+                    Some(UserEvent::ToggleAction) => {
                         self.toggle_action();
                     }
-                    key_code!(KeyCode::Enter) => {
+                    Some(UserEvent::Execute) => {
                         let ret = match self.get_current_target() {
                             Some(target) => Ret::Selected(target, self.action),
                             None => Ret::NotSelected,

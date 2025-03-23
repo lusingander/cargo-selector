@@ -1,5 +1,6 @@
 mod cargo;
 mod config;
+mod event;
 mod matcher;
 mod tui;
 mod util;
