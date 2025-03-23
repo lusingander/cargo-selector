@@ -1,6 +1,6 @@
 [package]
 name = "cargo-selector"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2021"
 description = "Cargo subcommand to select and execute binary/example targets"
 authors = ["Kyosuke Fujimoto <kyoro.f@gmail.com>"]
