@@ -1,0 +1,14 @@
+[tasks.fmt-check]
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[tasks.lint]
+dependencies = ["fmt-check", "clippy"]
