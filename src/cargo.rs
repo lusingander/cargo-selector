@@ -94,7 +94,7 @@ pub fn exec_cargo_run(
     eprintln!("{}", cmd_str(&cmd));
 
     cmd.spawn()
-        .unwrap_or_else(|_| panic!("failed to spawn cargo {} command", action))
+        .unwrap_or_else(|_| panic!("failed to spawn cargo {action} command"))
         .wait()
         .unwrap()
 }
@@ -106,7 +106,7 @@ fn cmd_str(cmd: &Command) -> String {
         .map(|a| {
             let a = a.to_string_lossy();
             if a.contains(char::is_whitespace) {
-                format!("\"{}\"", a).into()
+                format!("\"{a}\"").into()
             } else {
                 a
             }

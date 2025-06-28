@@ -267,13 +267,13 @@ impl Tui {
 
         let mut spans = Vec::new();
         spans.push(" ".into());
-        spans.push(format!("{:kind_w$}", kind).fg(self.theme.kind_fg));
+        spans.push(format!("{kind:kind_w$}").fg(self.theme.kind_fg));
         spans.push(" ".into());
         spans.extend(name_spans);
         spans.push(" ".into());
-        spans.push(format!("{:path_w$}", path).fg(self.theme.path_fg));
+        spans.push(format!("{path:path_w$}").fg(self.theme.path_fg));
         spans.push(" ".into());
-        spans.push(format!("{:features_w$}", features).fg(self.theme.features_fg));
+        spans.push(format!("{features:features_w$}").fg(self.theme.features_fg));
         spans.push(" ".into());
 
         let line = Text::from(Line::from(spans));
