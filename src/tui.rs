@@ -234,7 +234,7 @@ impl Tui {
         selected: bool,
         max_w: usize,
         matched_indices: &[usize],
-    ) -> ListItem {
+    ) -> ListItem<'_> {
         let kind_w: usize = 7;
         let name_w: usize = 25;
         let path_w: usize = 30;
