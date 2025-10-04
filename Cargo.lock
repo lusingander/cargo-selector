@@ -101,7 +101,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-selector"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "cargo_metadata",
  "clap",
