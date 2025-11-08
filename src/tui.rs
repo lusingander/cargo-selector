@@ -253,7 +253,7 @@ impl Tui {
             truncate_str(&s, features_w, ELLIPSIS).into()
         };
 
-        let mut name_mt = highlight_matched_text(name.to_string())
+        let mut name_mt = highlight_matched_text(vec![name.to_string().into()])
             .matched_indices(matched_indices.to_vec())
             .not_matched_style(Style::default().fg(self.theme.name_fg))
             .matched_style(Style::default().fg(self.theme.name_match_fg));
