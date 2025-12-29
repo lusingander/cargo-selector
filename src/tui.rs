@@ -62,7 +62,10 @@ impl Tui {
         tui
     }
 
-    pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> std::io::Result<Ret> {
+    pub fn run<B>(&mut self, terminal: &mut Terminal<B>) -> std::io::Result<Ret>
+    where
+        B: Backend<Error = std::io::Error>,
+    {
         loop {
             terminal.draw(|f| self.render(f))?;
 
