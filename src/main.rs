@@ -64,6 +64,7 @@ struct SelectorArgs {
 #[derive(Debug, Clone)]
 pub struct Target {
     name: String,
+    package: String,
     kind: TargetKind,
     path: String,
     required_features: Vec<String>,
