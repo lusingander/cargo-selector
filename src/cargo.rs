@@ -11,9 +11,10 @@ use crate::{Action, Target, TargetKind};
 fn convert(metadata: CargoMetadata, current_dir: &Path) -> Vec<Target> {
     let mut targets = Vec::new();
     for p in &metadata.packages {
+        let package_name = p.name.as_str();
         for t in &p.targets {
             if is_select_target(t) {
-                targets.push(build_target(t, current_dir));
+                targets.push(build_target(t, package_name, current_dir));
             }
         }
     }
@@ -24,8 +25,9 @@ fn is_select_target(t: &CargoTarget) -> bool {
     t.is_bin() || t.is_example()
 }
 
-fn build_target(t: &CargoTarget, current_dir: &Path) -> Target {
+fn build_target(t: &CargoTarget, package_name: &str, current_dir: &Path) -> Target {
     let name = t.name.to_owned();
+    let package = package_name.to_owned();
     let kind = if t.is_bin() {
         TargetKind::Bin
     } else {
@@ -40,6 +42,7 @@ fn build_target(t: &CargoTarget, current_dir: &Path) -> Target {
 
     Target {
         name,
+        package,
         kind,
         path,
         required_features,
@@ -76,6 +79,8 @@ pub fn exec_cargo_run(
 
     let mut cmd = Command::new("cargo");
     cmd.arg(action).arg(kind).arg(name);
+
+    cmd.arg("--package").arg(&target.package);
 
     let require_features = !target.required_features.is_empty();
 
