@@ -32,6 +32,8 @@ pub struct Tui {
     list_height: usize,
     list_offset: usize,
 
+    show_features: bool,
+
     matcher: Matcher,
     mapper: UserEventMapper,
     theme: ColorTheme,
@@ -50,9 +52,11 @@ pub enum Ret {
 
 impl Tui {
     pub fn new(targets: Vec<Target>, term_size: Rect, matcher: Matcher, theme: ColorTheme) -> Tui {
+        let show_features = targets.iter().any(|t| !t.required_features.is_empty());
         let mut tui = Tui {
             targets,
             list_height: Tui::calc_list_height(term_size.height),
+            show_features,
             matcher,
             mapper: UserEventMapper::new(),
             theme,
@@ -240,8 +244,14 @@ impl Tui {
     ) -> ListItem<'_> {
         let kind_w: usize = 7;
         let name_w: usize = 25;
-        let path_w: usize = 30;
-        let features_w: usize = max_w - (kind_w + name_w + path_w + 5);
+        let (path_w, features_w) = if self.show_features {
+            let path_w: usize = 30;
+            let features_w: usize = max_w - (kind_w + name_w + path_w + 5);
+            (path_w, features_w)
+        } else {
+            let path_w: usize = max_w - (kind_w + name_w + 4);
+            (path_w, 0)
+        };
 
         let kind = match target.kind {
             TargetKind::Bin => "bin",
@@ -276,8 +286,10 @@ impl Tui {
         spans.push(" ".into());
         spans.push(format!("{path:path_w$}").fg(self.theme.path_fg));
         spans.push(" ".into());
-        spans.push(format!("{features:features_w$}").fg(self.theme.features_fg));
-        spans.push(" ".into());
+        if self.show_features {
+            spans.push(format!("{features:features_w$}").fg(self.theme.features_fg));
+            spans.push(" ".into());
+        }
 
         let line = Text::from(Line::from(spans));
         let style = if selected {
