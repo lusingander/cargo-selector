@@ -6,7 +6,7 @@ Cargo subcommand to select and execute binary/example targets
 
 <img src="./img/demo.gif" width=800>
 
-(This demo uses [Ratatui](https://github.com/ratatui-org/ratatui) as an example!)
+(This demo uses [Ratatui](https://github.com/ratatui/ratatui) as an example!)
 
 ## Installation
 
