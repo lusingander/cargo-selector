@@ -112,7 +112,7 @@ impl Tui {
     }
 
     fn select_next(&mut self) {
-        if self.cursor < self.filtered.len() - 1 {
+        if self.cursor + 1 < self.filtered.len() {
             if self.cursor - self.list_offset == self.list_height - 1 {
                 self.list_offset += 1;
             }
